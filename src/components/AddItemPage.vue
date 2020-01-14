@@ -26,19 +26,30 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 
 @Component
 export default class AddItemPage extends Vue {
+    @Prop() ownerGuid: string;
     product={
          id: "",
          icon: "",
          name: "",
          owner: "",
+         guid: "",
          count: undefined,
          price: undefined,
-         desiredQuantity: undefined
+         desiredQuantity: 0
          }
-    emitToParent(event) {
-      this.product.id = this.product.name + this.product.owner;
+    emitToParent() {
+        if(!this.product.name || !this.product.owner || !this.product.count || !this.product.price || isNaN(this.product.count) || isNaN(this.product.price)){
+            alert("Please complete all the fields!");
+            return;
+        }
+      this.product.id = this.createGuid() + this.createGuid() + this.createGuid() + this.createGuid();
+      this.product.guid = this.ownerGuid;
       this.$emit('childToParent', this.product);
-    }
+    };
+    createGuid(){
+      return Math.floor((Math.random()) * 0x10000).toString(16);
+    };
+    
 }
 </script>
 

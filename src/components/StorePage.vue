@@ -8,9 +8,10 @@
                         <th>Product</th>
                         <th>Stock</th>
                         <th>Quantity</th>
-                        <th class="text-center">Price</th>
-                        <th class="text-center">Total</th>
+                        <th>Price</th>
+                        <th>Total</th>
                         <th>Buy</th>
+                        <th>Remove</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -31,7 +32,11 @@
                         <td class="col-sm-1 col-md-1 text-center"><strong>{{product.price}}$</strong></td>
                         <td class="col-sm-1 col-md-1 text-center"><strong>{{product.price * product.desiredQuantity}}$</strong></td>
                         <td class="col">
-                        <button type="button" class="btn btn-primary">Add</button></td>
+                        <button type="button" class="btn btn-primary" :disabled="product.count<=0" @click="addToCart(product)" >Add</button>
+                        </td>
+                        <td class="col">
+                        <button type="button" class="btn btn-danger" :disabled="shouldDisable(product)" @click="deleteItem(product)" >X</button>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -46,9 +51,35 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 @Component
 export default class StorePage extends Vue {
   @Prop() public products: any;
+  @Prop() sessionId: string;
 
   private isInStock(product: any): String {
     return product.count > 0 ? "In Stock" : "Out of order";
+  }
+  private shouldDisable(product: any): boolean {
+      return product.guid!=this.sessionId;
+  }
+  private deleteItem(product: any): void{
+      for(var i = this.products.length - 1; i >= 0; i--) {
+        if(this.products[i] === product) {
+            this.products.splice(i, 1);
+        }
+    }
+    this.$emit('deleteFromCart', product);
+  }
+  private addToCart(product: any): void{
+      if(isNaN(product.desiredQuantity)){
+          alert('Please enter a valid number!');
+          return;
+      }
+      if(product.desiredQuantity > product.count){
+          alert('There are not enough items of that type!');
+          return;
+      }
+      if(product.desiredQuantity > 0){
+        product.count = product.count - product.desiredQuantity;
+        this.$emit('addProductToCart', product);
+      }
   }
 }
 </script>
